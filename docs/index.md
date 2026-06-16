@@ -31,3 +31,4 @@ features:
     details: GitHub リポジトリを介したマルチデバイス同期。コンフリクト解決 UI で安心マージ。
     link: /guide/sync
 ---
+
