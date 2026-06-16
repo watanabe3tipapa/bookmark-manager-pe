@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist-electron",
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": ["src/main/**/*.ts", "src/preload/**/*.ts", "src/storage/**/*.ts", "src/import/**/*.ts", "src/types/**/*.ts", "src/shared/**/*.ts", "vite.config.ts"]
+}
