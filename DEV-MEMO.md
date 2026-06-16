@@ -186,3 +186,40 @@ repo/
 | `sync:run` | 同期実行 |
 | `conflict:resolve` | コンフリクト解決 |
 | `conflict:applyMerge` | カスタムマージ適用 |
+
+## Phase 6: VitePress チュートリアルサイト（GitHub Pages） ✅
+
+### 追加ファイル
+- `docs/.vitepress/config.ts` — VitePress 設定（base: `/bookmark-manager-pe/`）
+- `docs/.vitepress/theme/index.ts` — テーマ（デフォルト）
+- `docs/index.md` — トップページ（機能カード4つ）
+- `docs/guide/getting-started.md` — セットアップ・画面構成
+- `docs/guide/import.md` — ブラウザ別インポート手順
+- `docs/guide/duplicate.md` — 重複検出・マージ
+- `docs/guide/smart-views.md` — スマートビュー・デバイススコープ
+- `docs/guide/ai-assistant.md` — AIアシスタント（Zed連携）
+- `docs/guide/sync.md` — GitHub同期・コンフリクト解決
+- `docs/guide/faq.md` — FAQ
+- `.github/workflows/deploy-docs.yml` — GitHub Actions（`docs/` 変更時に自動デプロイ）
+- `docs/public/screenshots/main-layout.png` — メイン画面スクリーンショット
+- `docs/public/screenshots/import.png` — インポート画面（プレースホルダ）
+- `docs/public/screenshots/duplicate.png` — 重複検出画面（プレースホルダ）
+- `docs/public/screenshots/ai-assistant.png` — AIアシスタントパネル（プレースホルダ）
+- `docs/public/screenshots/sync-conflict.png` — コンフリクト解決モーダル（プレースホルダ）
+- `docs/public/screenshots/setup.png` — 同期設定ダイアログ（プレースホルダ）
+
+### package.json 追加スクリプト
+- `pnpm docs:dev` — VitePress 開発サーバ起動
+- `pnpm docs:build` — VitePress 静的ビルド
+- `pnpm docs:preview` — ビルド結果をローカルプレビュー
+
+### デプロイ構成
+- **Trigger**: `main` ブランチの `docs/` 配下に push されたとき（手動起動も可）
+- **Build**: VitePress (`docs/.vitepress/dist` に出力)
+- **Publish**: `peaceiris/actions-gh-pages` → `gh-pages` ブランチ
+- **URL**: `https://watanabe3tipapa.github.io/bookmark-manager-pe/`
+
+### 📸 スクリーンショット注意
+- `main-layout.png` のみ実画面をキャプチャ
+- 他の5枚はテキストプレースホルダ（要差し替え）
+- 差し替え方法: アプリを起動し、各パネルを表示 → `screencapture -w` でウインドウをクリックしてキャプチャ → 同名で上書き保存
