@@ -220,6 +220,46 @@ repo/
 - **URL**: `https://watanabe3tipapa.github.io/bookmark-manager-pe/`
 
 ### 📸 スクリーンショット注意
-- `main-layout.png` のみ実画面をキャプチャ
+- `main-layout.png` のみ実画面をキャプチャ（ただし JPEG 形式圧縮で 39KB）
 - 他の5枚はテキストプレースホルダ（要差し替え）
 - 差し替え方法: アプリを起動し、各パネルを表示 → `screencapture -w` でウインドウをクリックしてキャプチャ → 同名で上書き保存
+
+### CI/CD 構築ログ
+
+#### 大前提: GitHub Pages の方式には2種類ある
+
+| 方式 | 設定 (Settings → Pages → Source) | ワークフローで使うアクション |
+|---|---|---|
+| **Deploy from branch** | `Deploy from branch` → `gh-pages` / `root` | `peaceiris/actions-gh-pages` (gh-pages ブランチに直接 push) |
+| **GitHub Actions** | `GitHub Actions` | `actions/configure-pages` + `actions/upload-pages-artifact` + `actions/deploy-pages` (Pages API 経由でデプロイ) |
+
+両者は互換性がなく、設定とワークフローを一致させる必要がある。
+
+#### 1回目: `contents: read` → peaceiris の push が 403
+```
+remote: Permission to watanabe3tipapa/bookmark-manager-pe.git denied to github-actions[bot].
+```
+原因: `permissions.contents` が `read` だったため、peaceiris が gh-pages ブランチに push できなかった。
+修正: `contents: write` に変更
+
+#### 2回目: `peaceiris/actions-gh-pages` 方式で gh-pages ブランチ作成成功 → しかし Pages に反映されず
+ワークフローは成功し `gh-pages` ブランチも作成されたが、`https://watanabe3tipapa.github.io/bookmark-manager-pe/` が 404 に。
+原因: **ユーザーが GitHub Settings → Pages → Source を「GitHub Actions」に設定していた**ため、ブランチからのデプロイ方式（peaceiris）が認識されなかった。設定とワークフローが不一致だった。
+気付くまでに `pages API` の `status: null` や `gh api repos/.../pages/deployments` の 404 で時間を要した。
+
+#### 3回目 (最終): `actions/deploy-pages` ネイティブ方式に切り替え
+`peaceiris/actions-gh-pages` を削除し、以下の公式アクションに置き換え:
+1. `actions/configure-pages@v5` — Pages 設定をワークフローから構成
+2. `actions/upload-pages-artifact@v3` — ビルド成果物をアップロード
+3. `actions/deploy-pages@v4` — Pages API 経由でデプロイ
+
+`permissions` も `contents: read` に戻して問題なし（ブランチへの直接書き込みが不要になったため）。
+
+**結果: ✅ success (1m1s), HTTP 200 確認済み**
+URL: https://watanabe3tipapa.github.io/bookmark-manager-pe/
+
+#### 教訓
+- GitHub Pages の Source 設定（`Deploy from branch` vs `GitHub Actions`）とワークフローの方式は必ず一致させる
+- `peaceiris/actions-gh-pages` は旧来の「ブランチからデプロイ」方式向け
+- 「GitHub Actions」方式を選んだ場合は `actions/deploy-pages` を使う
+- `gh api repos/{owner}/{repo}/pages` の `status` フィールドで Pages の状態を確認できる
