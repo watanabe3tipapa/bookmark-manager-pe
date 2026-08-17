@@ -12,6 +12,14 @@ interface ExplorePanelProps {
 
 type TargetMode = 'untagged' | 'all' | 'filtered'
 
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return url
+  }
+}
+
 export function ExplorePanel({ filteredBookmarks, allBookmarks, onClose, onChanged }: ExplorePanelProps) {
   const [config, setConfig] = useState<{ workerUrl: string } | null>(null)
   const [showSetup, setShowSetup] = useState(false)
@@ -39,17 +47,16 @@ export function ExplorePanel({ filteredBookmarks, allBookmarks, onClose, onChang
 
   const discoveredLinks = useMemo(() => {
     const seen = new Set<string>()
-    const links: { url: string; title?: string }[] = []
+    const links: { url: string }[] = []
     for (const r of results) {
       for (const url of r.links ?? []) {
         if (seen.has(url)) continue
         seen.add(url)
-        const bm = allBookmarks.find((b) => b.url === url)
-        links.push({ url, title: r.title })
+        links.push({ url })
       }
     }
     return links
-  }, [results, allBookmarks])
+  }, [results])
 
   const handleSaveConfig = useCallback(async (newConfig: { workerUrl: string }) => {
     await window.electronAPI.explore.setConfig(newConfig)
@@ -91,7 +98,7 @@ export function ExplorePanel({ filteredBookmarks, allBookmarks, onClose, onChang
   const handleAddLinks = useCallback(async () => {
     if (discoveredLinks.length === 0) return
     const result = await window.electronAPI.explore.addBookmarks(
-      discoveredLinks.map((l) => ({ url: l.url, title: l.title })),
+      discoveredLinks.map((l) => ({ url: l.url })),
     )
     setAddedLinks(result.added)
     onChanged()
@@ -215,7 +222,7 @@ export function ExplorePanel({ filteredBookmarks, allBookmarks, onClose, onChang
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-xs font-medium text-zinc-200 truncate">
-                          {r.title || new URL(r.url).hostname}
+                          {r.title || safeHostname(r.url)}
                         </p>
                         <p className="text-[10px] text-zinc-600 truncate">{r.url}</p>
                       </div>

@@ -288,8 +288,8 @@ function registerIpcHandlers() {
     }
 
     repo.updateBookmark(bookmarkId, {
-      title: data.title,
-      summary: data.summary,
+      title: data.title ? data.title : undefined,
+      summary: data.summary ? data.summary : undefined,
       thumbnail_path: thumbnailPath || undefined,
     })
 
