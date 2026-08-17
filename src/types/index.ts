@@ -3,6 +3,8 @@ export interface Bookmark {
   url: string
   title: string
   notes: string
+  summary: string
+  thumbnail_path: string
   visit_count: number
   device_scoped: boolean
   source_device_id: string | null
@@ -87,4 +89,29 @@ export interface SyncResult {
   pushed: number
   conflicts: ConflictEntry[]
   errors: string[]
+}
+
+export interface ExploreConfig {
+  workerUrl: string
+}
+
+export interface ExploreResult {
+  bookmarkId: string
+  url: string
+  ok: boolean
+  title?: string
+  summary?: string
+  tags?: string[]
+  thumbnail?: string
+  links?: string[]
+  errors: string[]
+}
+
+export interface ExploreProgress {
+  processed: number
+  total: number
+  succeeded: number
+  failed: number
+  currentUrl?: string
+  done: boolean
 }

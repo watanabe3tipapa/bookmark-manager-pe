@@ -21,7 +21,19 @@ export function initDatabase(): Database.Database {
 
   db.exec(SCHEMA_SQL)
 
+  migrate(db)
+
   return db
+}
+
+function migrate(db: Database.Database): void {
+  const cols = (db.prepare('PRAGMA table_info(bookmarks)').all() as { name: string }[]).map((c) => c.name)
+  if (!cols.includes('summary')) {
+    db.exec(`ALTER TABLE bookmarks ADD COLUMN summary TEXT DEFAULT ''`)
+  }
+  if (!cols.includes('thumbnail_path')) {
+    db.exec(`ALTER TABLE bookmarks ADD COLUMN thumbnail_path TEXT DEFAULT ''`)
+  }
 }
 
 export function getDatabase(): Database.Database {

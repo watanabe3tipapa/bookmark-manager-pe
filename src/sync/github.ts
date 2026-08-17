@@ -18,6 +18,8 @@ interface DeviceBookmark {
   visit_count: number
   device_scoped: boolean
   source_device_id: string | null
+  summary?: string
+  thumbnail_path?: string
   tags: string[]
   created_at: string
   updated_at: string
@@ -32,6 +34,8 @@ function bookmarkToDevice(bm: Bookmark): DeviceBookmark {
     visit_count: bm.visit_count,
     device_scoped: bm.device_scoped,
     source_device_id: bm.source_device_id,
+    summary: bm.summary || undefined,
+    thumbnail_path: bm.thumbnail_path || undefined,
     tags: bm.tags.map((t) => t.name),
     created_at: bm.created_at,
     updated_at: bm.updated_at,
@@ -44,6 +48,8 @@ function deviceToBookmark(db: DeviceBookmark): Bookmark {
     url: db.url,
     title: db.title,
     notes: db.notes,
+    summary: db.summary || '',
+    thumbnail_path: db.thumbnail_path || '',
     visit_count: db.visit_count,
     device_scoped: db.device_scoped,
     source_device_id: db.source_device_id,
@@ -228,6 +234,8 @@ export class GitHubSync {
               url: remoteBm.url || localBm.url,
               title: remoteBm.title && remoteBm.title.length >= localBm.title.length ? remoteBm.title : localBm.title,
               notes: localBm.notes || remoteBm.notes,
+              summary: remoteBm.summary || localBm.summary,
+              thumbnail_path: remoteBm.thumbnail_path || localBm.thumbnail_path,
               visit_count: Math.max(localBm.visit_count, remoteBm.visit_count),
               device_scoped: localBm.device_scoped && remoteBm.device_scoped,
               source_device_id: remoteTime > localTime ? remoteBm.source_device_id : localBm.source_device_id,

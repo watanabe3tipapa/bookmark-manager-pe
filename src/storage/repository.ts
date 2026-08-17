@@ -9,6 +9,8 @@ function rowToBookmark(row: Record<string, unknown>): Bookmark {
     url: row.url as string,
     title: row.title as string,
     notes: row.notes as string,
+    summary: row.summary as string,
+    thumbnail_path: row.thumbnail_path as string,
     visit_count: row.visit_count as number,
     device_scoped: !!(row.device_scoped as number),
     source_device_id: row.source_device_id as string | null,
@@ -110,10 +112,33 @@ export function getBookmark(id: string): Bookmark | null {
   return bm
 }
 
+export function getBookmarksByIds(ids: string[]): Bookmark[] {
+  if (ids.length === 0) return []
+  const db = getDatabase()
+  const placeholders = ids.map(() => '?').join(', ')
+  const rows = db.prepare(`SELECT * FROM bookmarks WHERE id IN (${placeholders}) AND deleted = 0`).all(...ids) as Record<string, unknown>[]
+  const bookmarks = rows.map(rowToBookmark)
+  loadTagsForBookmarks(bookmarks)
+  return bookmarks
+}
+
+export function createBookmarks(items: { url: string; title?: string; tags?: string[] }[]): number {
+  let count = 0
+  for (const item of items) {
+    const existing = getDatabase().prepare('SELECT id FROM bookmarks WHERE url = ? AND deleted = 0').get(item.url)
+    if (existing) continue
+    createBookmark({ url: item.url, title: item.title, tags: item.tags })
+    count++
+  }
+  return count
+}
+
 export function createBookmark(data: {
   url: string
   title?: string
   notes?: string
+  summary?: string
+  thumbnail_path?: string
   tags?: string[]
   device_scoped?: boolean
   source_device_id?: string
@@ -123,13 +148,15 @@ export function createBookmark(data: {
   const now = new Date().toISOString()
 
   db.prepare(`
-    INSERT INTO bookmarks (id, url, title, notes, device_scoped, source_device_id, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO bookmarks (id, url, title, notes, summary, thumbnail_path, device_scoped, source_device_id, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.url,
     data.title || '',
     data.notes || '',
+    data.summary || '',
+    data.thumbnail_path || '',
     data.device_scoped ? 1 : 0,
     data.source_device_id || null,
     now,
@@ -154,6 +181,8 @@ export function updateBookmark(id: string, data: {
   url?: string
   title?: string
   notes?: string
+  summary?: string
+  thumbnail_path?: string
   visit_count?: number
   device_scoped?: boolean
 }): Bookmark | null {
@@ -167,6 +196,8 @@ export function updateBookmark(id: string, data: {
   if (data.url !== undefined) { fields.push('url = ?'); values.push(data.url) }
   if (data.title !== undefined) { fields.push('title = ?'); values.push(data.title) }
   if (data.notes !== undefined) { fields.push('notes = ?'); values.push(data.notes) }
+  if (data.summary !== undefined) { fields.push('summary = ?'); values.push(data.summary) }
+  if (data.thumbnail_path !== undefined) { fields.push('thumbnail_path = ?'); values.push(data.thumbnail_path) }
   if (data.visit_count !== undefined) { fields.push('visit_count = ?'); values.push(data.visit_count) }
   if (data.device_scoped !== undefined) { fields.push('device_scoped = ?'); values.push(data.device_scoped ? 1 : 0) }
 

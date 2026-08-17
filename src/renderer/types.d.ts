@@ -1,4 +1,4 @@
-import type { Bookmark, Tag, ImportResult, DuplicateGroup, SyncResult, ConflictEntry } from '../types'
+import type { Bookmark, Tag, ImportResult, DuplicateGroup, SyncResult, ConflictEntry, ExploreResult, ExploreProgress } from '../types'
 
 export interface ElectronAPI {
   bookmark: {
@@ -49,6 +49,14 @@ export interface ElectronAPI {
     serverStart: () => Promise<{ success: boolean; port?: number; message?: string }>
     serverStop: () => Promise<{ success: boolean }>
     serverStatus: () => Promise<{ running: boolean; port: number }>
+  }
+  explore: {
+    getConfig: () => Promise<{ workerUrl: string } | null>
+    setConfig: (config: { workerUrl: string }) => Promise<{ success: boolean }>
+    run: (bookmarkIds: string[]) => Promise<{ results: ExploreResult[]; total: number; message?: string }>
+    apply: (bookmarkId: string, data: { title?: string; summary?: string; tags?: string[]; thumbnail?: string }) => Promise<Bookmark | null>
+    addBookmarks: (items: { url: string; title?: string; tags?: string[] }[]) => Promise<{ added: number }>
+    onProgress: (callback: (progress: ExploreProgress) => void) => () => void
   }
 }
 

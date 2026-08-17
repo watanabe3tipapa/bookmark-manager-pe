@@ -263,3 +263,68 @@ URL: https://watanabe3tipapa.github.io/bookmark-manager-pe/
 - `peaceiris/actions-gh-pages` は旧来の「ブランチからデプロイ」方式向け
 - 「GitHub Actions」方式を選んだ場合は `actions/deploy-pages` を使う
 - `gh api repos/{owner}/{repo}/pages` の `status` フィールドで Pages の状態を確認できる
+
+## Phase 7: 探索機能（Kitesurf / Cloudflare Browser Run） ✅
+
+### 概要
+Kitesurf（Cloudflare のステートレス AI 向けブラウザ）を使い、ブックマークに AI 要約・サムネイル・リンク発見を自動付与する機能。
+Electron アプリ本体に AI モデルやブラウザを持たせず、**Cloudflare Worker としてデプロイ**して HTTP で呼び出す構成（方式A）。
+
+### アーキテクチャ
+```
+Electron アプリ (main process)
+  └─ fetch POST {worker}/explore  ← 同時実行3 (concurrency)
+        └─ Cloudflare Worker (workers/explore)
+             └─ env.BROWSER.quickAction(action, { url, browser: 'kitesurf', ... })
+                  ├─ action: json       → AI要約 (Workers AI Llama-3.3-70B)
+                  ├─ action: screenshot → サムネイル (base64 data URL)
+                  └─ action: links      → リンク発見 (visibleLinksOnly: true)
+```
+
+### 要点
+- **Kitesurf**: Cloudflare Worker 上で動くステートレスブラウザ。Browser Run Quick Actions と互換で `browser: 'kitesurf'` パラメータを付ける。Worker バインディング経由（`env.BROWSER`）のため **API トークン不要**。
+- **json アクション**: `prompt` + `response_format`（JSONスキーマ）で `{title, summary, tags}` を抽出。summary は日本語2〜3文。
+- **screenshot アクション**: PNG base64 を返す → Electron 側で `userData/thumbnails/{bookmarkId}.png` に保存（DB はパスのみ保持で肥大化回避）。
+- **links アクション**: `visibleLinksOnly: true` で画面上のリンクを抽出 → ソース自身/同一ホスト/既存ブックマーク/重複を除外し最大10件の候補に。
+- **一括処理**: 対象 = 未分類のみ（デフォルト）/ 全件 / 現在の絞り込み。`explore:progress` イベントで進捗通知。1件ごとにエラー隔離（Kitesurf は動画・WebGL・ログイン必須・ボット対策サイトで失敗 → スキップ）。
+- **適用**: 結果確認後に個別「適用」で title/summary/tags/サムネイルを DB へ反映。発見リンクは「一括追加」で未登録分のみ createBookmarks。
+- **設定**: アプリには Worker URL のみ保存（`userData/explore-config.json`）。Cloudflare の認証情報は Worker 側に隠蔽されるためシークレット不要。
+
+### 追加ファイル
+- `workers/explore/wrangler.json` — browser binding (BROWSER), remote: true, compatibility_date 2026-03-24
+- `workers/explore/package.json` — wrangler ^4.20.0 / @cloudflare/workers-types
+- `workers/explore/tsconfig.json` — ES2022
+- `workers/explore/src/index.ts` — Worker 本体（POST /explore, GET /health, CORS）
+- `src/explore/config.ts` — Worker URL の永続化
+- `src/explore/client.ts` — Worker 呼び出し / サムネイル保存 / リンクフィルタ
+- `src/renderer/components/ExplorePanel.tsx` — 探索パネル UI
+- `src/renderer/components/ExploreSetupDialog.tsx` — Worker URL 設定ダイアログ
+
+### DB マイグレーション
+```sql
+ALTER TABLE bookmarks ADD COLUMN summary TEXT DEFAULT '';
+ALTER TABLE bookmarks ADD COLUMN thumbnail_path TEXT DEFAULT '';
+```
+`PRAGMA table_info(bookmarks)` で列有無を確認してから `ALTER TABLE`（既存DBにも安全）。
+
+### 追加 IPC
+| チャンネル | 説明 |
+|---|---|
+| `explore:getConfig` / `explore:setConfig` | Worker URL の取得・保存 |
+| `explore:run` | 一括探索実行（`{results, total}` を返す） |
+| `explore:apply` | 探索結果を1件適用（title/summary/tags/サムネイル） |
+| `explore:addBookmarks` | 発見リンクを一括追加（未登録のみ） |
+| `explore:progress` | 進捗イベント（main → renderer） |
+
+### デプロイ手順
+```bash
+cd workers/explore
+pnpm install
+npx wrangler deploy
+```
+生成された `*.workers.dev` URL をアプリの「探索」パネル → 「設定」に入力（`/health` で接続テスト可能）。
+
+### 注意点
+- Kitesurf は beta で無料枠制限あり（エラー時は該当ブックマークのみ失敗として継続）。
+- サムネイル保存時に既存ファイルは上書き（同じ bookmarkId）。
+- sync（Phase 5）の device JSON にも summary / thumbnail_path を載せて他デバイスへ伝搬。

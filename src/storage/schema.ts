@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   url TEXT NOT NULL,
   title TEXT DEFAULT '',
   notes TEXT DEFAULT '',
+  summary TEXT DEFAULT '',
+  thumbnail_path TEXT DEFAULT '',
   visit_count INTEGER DEFAULT 0,
   device_scoped INTEGER DEFAULT 0,
   source_device_id TEXT,

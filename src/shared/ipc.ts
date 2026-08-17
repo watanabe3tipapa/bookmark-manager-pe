@@ -23,4 +23,10 @@ export const IPC_CHANNELS = {
   AI_SERVER_START: 'ai:serverStart',
   AI_SERVER_STOP: 'ai:serverStop',
   AI_SERVER_STATUS: 'ai:serverStatus',
+  EXPLORE_GET_CONFIG: 'explore:getConfig',
+  EXPLORE_SET_CONFIG: 'explore:setConfig',
+  EXPLORE_RUN: 'explore:run',
+  EXPLORE_APPLY: 'explore:apply',
+  EXPLORE_ADD_BOOKMARKS: 'explore:addBookmarks',
+  EXPLORE_PROGRESS: 'explore:progress',
 } as const

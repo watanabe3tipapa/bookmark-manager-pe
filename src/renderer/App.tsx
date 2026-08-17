@@ -6,6 +6,7 @@ import { DuplicatePanel } from './components/DuplicatePanel'
 import { AIAssistantPanel } from './components/AIAssistantPanel'
 import { ConflictModal } from './components/ConflictModal'
 import { SyncSetupDialog } from './components/SyncSetupDialog'
+import { ExplorePanel } from './components/ExplorePanel'
 import { useBookmarks } from './hooks/useBookmarks'
 import { useSearch } from './hooks/useSearch'
 import type { Bookmark, Tag, DuplicateGroup, SmartViewType, ScopeFilter, ConflictEntry } from '../types'
@@ -80,6 +81,7 @@ export default function App() {
   const [showConflictModal, setShowConflictModal] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [showSyncSetup, setShowSyncSetup] = useState(false)
+  const [showExplore, setShowExplore] = useState(false)
   const [syncStatus, setSyncStatus] = useState<{ connected: boolean; lastSync: string | null; message: string; config?: { owner: string; repo: string } }>({
     connected: false, lastSync: null, message: '同期は未設定です',
   })
@@ -299,16 +301,25 @@ export default function App() {
         onCreateNew={handleCreateNew}
         onFindDuplicates={handleFindDuplicates}
         onOpenAIAssistant={() => setShowAIAssistant(true)}
+        onExplore={() => setShowExplore(true)}
         scanningDuplicates={scanningDuplicates}
         importing={importing}
       />
       {showDuplicates && (
         <DuplicatePanel groups={duplicateGroups} onClose={handleCloseDuplicates} onMerge={handleMerge} />
       )}
-      {!showDuplicates && showAIAssistant && (
+      {showExplore && (
+        <ExplorePanel
+          filteredBookmarks={filteredBookmarks}
+          allBookmarks={bookmarks}
+          onClose={() => setShowExplore(false)}
+          onChanged={refetch}
+        />
+      )}
+      {!showDuplicates && !showExplore && showAIAssistant && (
         <AIAssistantPanel onClose={() => setShowAIAssistant(false)} />
       )}
-      {!showDuplicates && !showAIAssistant && detailedBookmark && (
+      {!showDuplicates && !showExplore && !showAIAssistant && detailedBookmark && (
         <DetailPanel
           bookmark={detailedBookmark}
           allTags={allTags}

@@ -46,6 +46,21 @@ const api = {
     serverStop: () => ipcRenderer.invoke(IPC_CHANNELS.AI_SERVER_STOP),
     serverStatus: () => ipcRenderer.invoke(IPC_CHANNELS.AI_SERVER_STATUS),
   },
+  explore: {
+    getConfig: () => ipcRenderer.invoke(IPC_CHANNELS.EXPLORE_GET_CONFIG),
+    setConfig: (config: { workerUrl: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.EXPLORE_SET_CONFIG, config),
+    run: (bookmarkIds: string[]) => ipcRenderer.invoke(IPC_CHANNELS.EXPLORE_RUN, bookmarkIds),
+    apply: (bookmarkId: string, data: { title?: string; summary?: string; tags?: string[]; thumbnail?: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.EXPLORE_APPLY, bookmarkId, data),
+    addBookmarks: (items: { url: string; title?: string; tags?: string[] }[]) =>
+      ipcRenderer.invoke(IPC_CHANNELS.EXPLORE_ADD_BOOKMARKS, items),
+    onProgress: (callback: (progress: { processed: number; total: number; succeeded: number; failed: number; currentUrl?: string; done: boolean }) => void) => {
+      const listener = (_event: unknown, progress: unknown) => callback(progress as { processed: number; total: number; succeeded: number; failed: number; currentUrl?: string; done: boolean })
+      ipcRenderer.on(IPC_CHANNELS.EXPLORE_PROGRESS, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.EXPLORE_PROGRESS, listener)
+    },
+  },
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)

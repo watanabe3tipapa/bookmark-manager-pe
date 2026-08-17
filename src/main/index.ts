@@ -7,8 +7,10 @@ import { parseBookmarkHtml, detectSourceFromHtml } from '../import'
 import { IPC_CHANNELS } from '../shared/ipc'
 import { startServer, stopServer, getServerStatus } from '../server'
 import * as sync from '../sync'
+import * as exploreConfig from '../explore/config'
+import * as exploreClient from '../explore/client'
 import type { ImportSource } from '../import'
-import type { SyncConfig, ConflictEntry } from '../types'
+import type { SyncConfig, ConflictEntry, ExploreResult, ExploreProgress } from '../types'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -210,10 +212,104 @@ function registerIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.AI_SERVER_STATUS, () => {
     return getServerStatus()
   })
+
+  ipcMain.handle(IPC_CHANNELS.EXPLORE_GET_CONFIG, () => {
+    const config = exploreConfig.getConfig()
+    return config ? { workerUrl: config.workerUrl } : null
+  })
+
+  ipcMain.handle(IPC_CHANNELS.EXPLORE_SET_CONFIG, (_event, config: { workerUrl: string }) => {
+    exploreConfig.setConfig(config)
+    return { success: true }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.EXPLORE_RUN, async (_event, bookmarkIds: string[]) => {
+    const config = exploreConfig.getConfig()
+    if (!config) {
+      return { results: [], total: 0, message: '探索機能が未設定です' }
+    }
+
+    const bookmarks = repo.getBookmarksByIds(bookmarkIds)
+    const total = bookmarks.length
+    const results: ExploreResult[] = []
+    const existingUrls = new Set(repo.getAllBookmarks().map((b) => b.url))
+
+    let processed = 0
+    let succeeded = 0
+    let failed = 0
+
+    const sendProgress = (done: boolean, currentUrl?: string) => {
+      const progress: ExploreProgress = { processed, total, succeeded, failed, currentUrl, done }
+      mainWindow?.webContents.send(IPC_CHANNELS.EXPLORE_PROGRESS, progress)
+    }
+
+    const CONCURRENCY = 3
+    for (let i = 0; i < bookmarks.length; i += CONCURRENCY) {
+      const batch = bookmarks.slice(i, i + CONCURRENCY)
+      const batchResults = await Promise.all(batch.map(async (bm) => {
+        processed++
+        sendProgress(false, bm.url)
+        try {
+          const raw = await exploreClient.exploreUrl(config.workerUrl, bm.url)
+          const candidateLinks = exploreClient.filterCandidateLinks(raw.links || [], bm.url, existingUrls)
+          return {
+            ...exploreClient.toExploreResult(bm.id, raw),
+            links: candidateLinks,
+          }
+        } catch (err) {
+          return {
+            bookmarkId: bm.id,
+            url: bm.url,
+            ok: false,
+            errors: [err instanceof Error ? err.message : '探索エラー'],
+          }
+        }
+      }))
+
+      for (const r of batchResults) {
+        results.push(r)
+        if (r.ok) succeeded++
+        else failed++
+      }
+    }
+
+    sendProgress(true)
+    return { results, total }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.EXPLORE_APPLY, (_event, bookmarkId: string, data: { title?: string; summary?: string; tags?: string[]; thumbnail?: string }) => {
+    let thumbnailPath = ''
+    if (data.thumbnail) {
+      try {
+        thumbnailPath = exploreClient.saveThumbnail(bookmarkId, data.thumbnail)
+      } catch (err) {
+        console.error('[Explore] Failed to save thumbnail:', err)
+      }
+    }
+
+    repo.updateBookmark(bookmarkId, {
+      title: data.title,
+      summary: data.summary,
+      thumbnail_path: thumbnailPath || undefined,
+    })
+
+    if (data.tags && data.tags.length > 0) {
+      for (const tag of data.tags) {
+        repo.addTagToBookmark(bookmarkId, tag)
+      }
+    }
+
+    return repo.getBookmark(bookmarkId)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.EXPLORE_ADD_BOOKMARKS, (_event, items: { url: string; title?: string; tags?: string[] }[]) => {
+    return { added: repo.createBookmarks(items) }
+  })
 }
 
 app.whenReady().then(() => {
   initDatabase()
+  exploreConfig.loadConfig()
   registerIpcHandlers()
   createWindow()
 

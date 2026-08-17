@@ -1,4 +1,4 @@
-import { ArrowUpDown, Import, Plus, Bookmark, CopyPlus, Scan, Bot } from 'lucide-react'
+import { ArrowUpDown, Import, Plus, Bookmark, CopyPlus, Scan, Bot, Globe } from 'lucide-react'
 import { BookmarkRow } from './BookmarkRow'
 import type { Bookmark as BookmarkType } from '../../types'
 
@@ -12,6 +12,7 @@ interface BookmarkListProps {
   onCreateNew: () => void
   onFindDuplicates: () => void
   onOpenAIAssistant: () => void
+  onExplore: () => void
   scanningDuplicates: boolean
   importing: boolean
 }
@@ -26,6 +27,7 @@ export function BookmarkList({
   onCreateNew,
   onFindDuplicates,
   onOpenAIAssistant,
+  onExplore,
   scanningDuplicates,
   importing,
 }: BookmarkListProps) {
@@ -87,6 +89,14 @@ export function BookmarkList({
           >
             <Bot className="w-3.5 h-3.5" />
             AI
+          </button>
+          <button
+            onClick={onExplore}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md
+                       bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            探索
           </button>
         </div>
       </div>
