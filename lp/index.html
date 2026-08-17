@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Bookmark Manager PE — マルチブラウザ・マルチデバイス対応のブックマーク管理ツール。AIで自動整理。" />
+  <meta name="description" content="Bookmark Manager PE — マルチブラウザ・マルチデバイス対応のブックマーク管理ツール。使い方・ポータル・AI整理。" />
   <title>Bookmark Manager PE | ブックマークを、ひとつの場所に</title>
   <style>
     :root {
@@ -19,16 +19,16 @@
       --radius: 14px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
-      line-height: 1.7;
+      line-height: 1.75;
       -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; text-decoration: none; }
-    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    .container { max-width: 1020px; margin: 0 auto; padding: 0 24px; }
 
     /* Header */
     header {
@@ -37,18 +37,29 @@
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
-    .nav {
-      display: flex; align-items: center; justify-content: space-between;
-      height: 64px;
-    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
     .brand-mark {
       width: 28px; height: 28px; border-radius: 8px;
       background: linear-gradient(135deg, #10b981, #059669);
       display: grid; place-items: center; color: #fff; font-size: 14px; font-weight: 800;
     }
-    .nav-links { display: flex; align-items: center; gap: 28px; font-size: 14px; color: var(--muted); }
+    .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
     .nav-links a:hover { color: var(--text); }
+    @media (max-width: 820px) { .nav-links { display: none; } }
+
+    /* Hero */
+    .hero { padding: 80px 0 56px; text-align: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent);
+      font-size: 13px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.25);
+      margin-bottom: 24px;
+    }
+    .hero h1 { font-size: clamp(30px, 5.5vw, 50px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p.sub { margin: 18px auto 32px; max-width: 620px; color: var(--muted); font-size: 16px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
@@ -58,106 +69,85 @@
     .btn-primary:hover { background: #34d399; }
     .btn-ghost { border-color: var(--border); color: var(--text); background: transparent; }
     .btn-ghost:hover { background: var(--panel); }
-
-    /* Hero */
-    .hero { padding: 96px 0 72px; text-align: center; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: 999px;
-      background: var(--accent-soft); color: var(--accent);
-      font-size: 13px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.25);
-      margin-bottom: 24px;
-    }
-    .hero h1 {
-      font-size: clamp(32px, 6vw, 56px);
-      font-weight: 800; letter-spacing: -0.02em; line-height: 1.2;
-    }
-    .hero h1 em { font-style: normal; color: var(--accent); }
-    .hero p.sub {
-      margin: 20px auto 36px; max-width: 640px;
-      color: var(--muted); font-size: 17px;
-    }
     .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-    .hero-meta {
-      margin-top: 40px; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
-      color: var(--faint); font-size: 13px;
-    }
-    .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
 
     /* Sections */
-    section { padding: 72px 0; }
-    .section-title { text-align: center; margin-bottom: 48px; }
-    .section-title h2 { font-size: clamp(24px, 4vw, 34px); font-weight: 800; }
-    .section-title p { color: var(--muted); margin-top: 10px; font-size: 15px; }
+    section { padding: 56px 0; }
+    .section-title { margin-bottom: 32px; }
+    .section-title h2 { font-size: clamp(22px, 3.6vw, 30px); font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .section-title h2 .no { color: var(--accent); font-size: 15px; font-weight: 800; }
+    .section-title p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+    .alt { background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 
-    /* Features */
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .feature {
+    /* Portal (WEB-UI) */
+    .portal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .portal-card {
+      display: flex; align-items: flex-start; gap: 14px;
       background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 26px; transition: border-color 0.2s ease, transform 0.2s ease;
+      padding: 20px; transition: border-color 0.2s ease, transform 0.2s ease;
     }
-    .feature:hover { border-color: rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
-    .feature-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      display: grid; place-items: center; font-size: 20px;
-      background: var(--accent-soft); color: var(--accent); margin-bottom: 16px;
+    .portal-card:hover { border-color: rgba(16, 185, 129, 0.45); transform: translateY(-2px); }
+    .portal-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 18px;
+      background: var(--accent-soft); color: var(--accent);
     }
-    .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-    .feature p { color: var(--muted); font-size: 14px; }
+    .portal-card h3 { font-size: 15px; font-weight: 700; }
+    .portal-card p { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
-    /* Steps */
-    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; counter-reset: step; }
-    .step {
-      background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 26px; position: relative;
+    /* Typography for usage content */
+    .usage h3 { font-size: 17px; font-weight: 700; margin: 28px 0 12px; }
+    .usage h4 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; color: var(--muted); }
+    .usage p, .usage li { color: var(--muted); font-size: 14.5px; }
+    .usage ul, .usage ol { margin: 8px 0 16px; padding-left: 24px; }
+    .usage li { margin: 4px 0; }
+    .usage strong { color: var(--text); }
+    .usage code, .usage pre code {
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+      padding: 2px 7px; font-size: 13px; color: var(--accent);
     }
+    .usage pre { margin: 12px 0 16px; }
+    .usage pre code { display: block; padding: 14px 16px; overflow-x: auto; line-height: 1.6; }
+    .usage .note {
+      padding: 12px 16px; border-radius: 10px; margin: 12px 0 18px;
+      background: var(--accent-soft); border: 1px solid rgba(16, 185, 129, 0.2);
+      color: var(--muted); font-size: 13.5px;
+    }
+    .usage .note strong { color: var(--accent); }
+
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13.5px; }
+    th, td { text-align: left; padding: 9px 12px; border: 1px solid var(--border); }
+    th { background: var(--panel); color: var(--text); font-weight: 600; white-space: nowrap; }
+    td { color: var(--muted); }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+
+    details { margin: 10px 0 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+    summary { cursor: pointer; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--muted); }
+    summary:hover { color: var(--text); }
+    details[open] summary { border-bottom: 1px solid var(--border); }
+    details .inner { padding: 12px 16px; }
+
+    .steps { counter-reset: step; margin: 12px 0 18px; }
+    .step { position: relative; padding: 14px 16px 14px 52px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); margin: 10px 0; }
     .step::before {
       counter-increment: step; content: counter(step);
-      position: absolute; top: -14px; left: 26px;
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--accent); color: #022c22; font-weight: 800; font-size: 14px;
+      position: absolute; left: 14px; top: 14px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); color: #022c22; font-weight: 800; font-size: 13px;
       display: grid; place-items: center;
     }
-    .step h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; margin-top: 10px; }
-    .step p { color: var(--muted); font-size: 14px; }
-    .step code {
-      display: inline-block; margin-top: 10px; padding: 4px 10px;
-      background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
-      font-size: 12px; color: var(--accent); font-family: "SF Mono", Menlo, monospace;
-    }
+    .step h4 { margin: 0 0 4px; font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .step p { color: var(--muted); font-size: 13.5px; margin: 0; }
 
-    /* Screenshot */
-    .screenshot-wrap {
-      text-align: center;
-    }
-    .screenshot-wrap img {
-      max-width: 100%; border-radius: var(--radius);
-      border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-    .screenshot-wrap p { color: var(--faint); font-size: 13px; margin-top: 14px; }
+    .cta { text-align: center; padding: 80px 0; background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08), transparent 60%); }
+    .cta h2 { font-size: clamp(22px, 4vw, 32px); font-weight: 800; margin-bottom: 10px; }
+    .cta p { color: var(--muted); margin-bottom: 28px; }
 
-    /* CTA */
-    .cta {
-      text-align: center; padding: 96px 0;
-      background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08), transparent 60%);
-    }
-    .cta h2 { font-size: clamp(24px, 4vw, 36px); font-weight: 800; margin-bottom: 12px; }
-    .cta p { color: var(--muted); margin-bottom: 32px; }
-
-    /* Footer */
-    footer { border-top: 1px solid var(--border); padding: 32px 0; color: var(--faint); font-size: 13px; }
+    footer { border-top: 1px solid var(--border); padding: 28px 0; color: var(--faint); font-size: 13px; }
     .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .footer-inner a { color: var(--muted); }
     .footer-inner a:hover { color: var(--text); }
-
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .hero { padding: 64px 0 48px; }
-      section { padding: 48px 0; }
-    }
   </style>
 </head>
 <body>
@@ -168,10 +158,13 @@
         Bookmark Manager PE
       </a>
       <nav class="nav-links">
-        <a href="#features">機能</a>
-        <a href="#how">使い方</a>
-        <a href="#screenshot">画面</a>
-        <a href="/bookmark-manager-pe/docs/">ガイド</a>
+        <a href="#portal">ポータル</a>
+        <a href="#usage">使い方</a>
+        <a href="#usage-install">セットアップ</a>
+        <a href="#usage-import">インポート</a>
+        <a href="#usage-organize">整理</a>
+        <a href="#usage-explore">AI探索</a>
+        <a href="#usage-sync">同期</a>
         <a href="https://github.com/watanabe3tipapa/bookmark-manager-pe">GitHub</a>
       </nav>
     </div>
@@ -180,98 +173,253 @@
   <section class="hero">
     <div class="container">
       <div class="hero-badge">マルチブラウザ × マルチデバイス × AI</div>
-      <h1>ブックマークを、<br /><em>ひとつの場所に。</em></h1>
+      <h1>ブックマークを、<em>ひとつの場所に。</em></h1>
       <p class="sub">
-        Chrome・Firefox・Safari・Edge のブックマークをまとめて取り込み、
-        AI が自動で要約・タグ付け。GitHub 同期でどのデバイスからでも同じコレクションにアクセスできます。
+        Chrome・Firefox・Safari・Edge のブックマークを集約し、AI が自動で要約・タグ付け。
+        このページはツールのポータルと使い方ガイドです。
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://github.com/watanabe3tipapa/bookmark-manager-pe">GitHub で見る</a>
-        <a class="btn btn-ghost" href="/bookmark-manager-pe/docs/">使い方ガイド</a>
-      </div>
-      <div class="hero-meta">
-        <span>Electron / React</span>
-        <span>SQLite ローカル保存</span>
-        <span>Cloudflare Workers 対応</span>
-        <span>MIT License</span>
+        <a class="btn btn-ghost" href="#usage">使い方を見る</a>
+        <a class="btn btn-ghost" href="/bookmark-manager-pe/docs/">ガイド (VitePress)</a>
       </div>
     </div>
   </section>
 
-  <section id="features">
+  <!-- ===== ポータル (WEB-UI) ===== -->
+  <section id="portal" class="alt">
     <div class="container">
       <div class="section-title">
-        <h2>6つの機能でコレクションを整頓</h2>
-        <p>保存するだけのブックマーク管理から、次のステージへ。</p>
+        <h2><span class="no">PORTAL</span> ツールへの入口</h2>
+        <p>リソース・データ・ドキュメントへのアクセスポイントです。</p>
       </div>
-      <div class="features-grid">
-        <div class="feature">
-          <div class="feature-icon">📥</div>
-          <h3>マルチブラウザ取り込み</h3>
-          <p>各ブラウザの HTML エクスポートを一括インポート。フォルダ構造は自動的にタグへ変換されます。</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">👁️</div>
-          <h3>スマートビュー</h3>
-          <p>未分類・最近追加・使われていない・よく見る。目的別のビューとデバイススコープで必要なものだけを表示。</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🧹</div>
-          <h3>重複検出・マージ</h3>
-          <p>URL を自動正規化して重複を検出。タイトル・タグ・メモをルールに基づいて安全に統合します。</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🤖</div>
-          <h3>AI 探索（Kitesurf）</h3>
-          <p>Cloudflare のブラウザでページを分析。日本語の AI 要約・サムネイル・関連リンクを自動取得。</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">✨</div>
-          <h3>Zed AI 連携</h3>
-          <p>エディタの AI を使って高度なタグ分類・タイトル整形・コレクション分析。生成した JSON をワンクリックで適用。</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🔄</div>
-          <h3>GitHub 同期</h3>
-          <p>リポジトリ経由で複数デバイス間を同期。競合が起きてもサイド・バイ・サイドの解決 UI で安全にマージ。</p>
-        </div>
+      <div class="portal-grid">
+        <a class="portal-card" href="https://github.com/watanabe3tipapa/bookmark-manager-pe">
+          <div class="portal-icon">📦</div>
+          <div><h3>GitHub リポジトリ</h3><p>ソースコード・インストール手順・開発者向け情報</p></div>
+        </a>
+        <a class="portal-card" href="/bookmark-manager-pe/docs/">
+          <div class="portal-icon">📖</div>
+          <div><h3>使い方ガイド</h3><p>VitePress 製の詳しいセットアップ・機能解説ドキュメント</p></div>
+        </a>
+        <a class="portal-card" href="#usage-install">
+          <div class="portal-icon">⚙️</div>
+          <div><h3>セットアップ</h3><p>Node.js / pnpm でのインストールと起動方法</p></div>
+        </a>
+        <a class="portal-card" href="#usage-explore">
+          <div class="portal-icon">🚀</div>
+          <div><h3>AI探索 (Kitesurf)</h3><p>Cloudflare Worker のデプロイ手順と使い方</p></div>
+        </a>
+        <a class="portal-card" href="#usage-data">
+          <div class="portal-icon">💾</div>
+          <div><h3>データ・バックアップ</h3><p>保存場所と安全なバックアップ方法</p></div>
+        </a>
+        <a class="portal-card" href="#usage-trouble">
+          <div class="portal-icon">🛠️</div>
+          <div><h3>トラブルシューティング</h3><p>よくある問題と対処法の一覧</p></div>
+        </a>
       </div>
     </div>
   </section>
 
-  <section id="how" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-    <div class="container">
+  <!-- ===== USAGE.md 内容 ===== -->
+  <section id="usage">
+    <div class="container usage">
       <div class="section-title">
-        <h2>3ステップで始められる</h2>
-        <p>インストールから自動整理まで、5分もかかりません。</p>
+        <h2><span class="no">USAGE</span> 使い方</h2>
+        <p>本ページに USAGE.md の内容を反映しています。該当セクションへはヘッダーのナビから移動できます。</p>
       </div>
+
+      <!-- 1. インストール -->
+      <div id="usage-install">
+        <h3>1. インストールと起動</h3>
+        <h4>必要なもの</h4>
+        <ul>
+          <li><strong>Node.js</strong> v20 以上</li>
+          <li><strong>pnpm</strong> v9 以上（<code>npm install -g pnpm</code> で導入）</li>
+        </ul>
+        <h4>セットアップ</h4>
+        <pre><code>git clone https://github.com/watanabe3tipapa/bookmark-manager-pe.git
+cd bookmark-manager-pe
+pnpm install</code></pre>
+        <p><code>pnpm install</code> の最後に、SQLite 用のネイティブモジュールが Electron 向けに自動ビルドされます。</p>
+        <h4>起動</h4>
+        <pre><code>pnpm dev</code></pre>
+        <p>初回は数秒かかりますが、アプリのウィンドウが開きます。</p>
+      </div>
+
+      <!-- 2. 画面構成 -->
+      <h3>2. 画面の見方</h3>
+      <p>画面は <strong>3 つのパネル</strong> で構成されています。</p>
+      <table>
+        <thead><tr><th>パネル</th><th>場所</th><th>役割</th></tr></thead>
+        <tbody>
+          <tr><td>サイドバー</td><td>左</td><td>検索・スマートビュー・タグ・デバイススコープ・同期</td></tr>
+          <tr><td>ブックマーク一覧</td><td>中央</td><td>絞り込んだブックマークの一覧と操作ボタン</td></tr>
+          <tr><td>詳細パネル</td><td>右</td><td>1件のブックマークの編集・タグ操作</td></tr>
+        </tbody>
+      </table>
+      <p>中央の一覧でブックマークをクリックすると右に詳細パネルが開き、タイトル・URL・メモの編集やタグの追加・削除ができます。</p>
+
+      <!-- 3. 基本操作 -->
+      <h3>3. 基本操作</h3>
+      <h4>ブックマークを追加する</h4>
       <div class="steps">
-        <div class="step">
-          <h3>インストール</h3>
-          <p>Node.js と pnpm があればすぐに起動できます。</p>
-          <code>pnpm install &amp;&amp; pnpm dev</code>
-        </div>
-        <div class="step">
-          <h3>ブックマークを取り込む</h3>
-          <p>ブラウザの HTML エクスポートをインポートするだけ。フォルダはタグになります。</p>
-        </div>
-        <div class="step">
-          <h3>AI で自動整理</h3>
-          <p>未分類ビューから探索を実行。要約・タグ・サムネイルが自動で付き、関連リンクも発見。</p>
-        </div>
+        <div class="step"><h4>「追加」ボタンをクリック</h4><p>一覧上部にあります。</p></div>
+        <div class="step"><h4>URL を入力</h4><p>タイトル・タグは省略可能です。</p></div>
+        <div class="step"><h4>Enter で保存</h4></div>
       </div>
-    </div>
-  </section>
 
-  <section id="screenshot">
-    <div class="container">
-      <div class="section-title">
-        <h2>すっきり3パネル構成</h2>
-        <p>検索・タグ・スマートビューのサイドバー、一覧、詳細編集をひとつの画面に。</p>
+      <div id="usage-import">
+        <h4>ブラウザのブックマークをインポートする</h4>
+        <p>各ブラウザで <strong>HTML ファイルを書き出して</strong>、アプリの <strong>インポート</strong> ボタンから取り込みます。</p>
+        <details>
+          <summary>ブラウザ別のエクスポート手順</summary>
+          <div class="inner">
+            <ul>
+              <li><strong>Chrome</strong>: ブックマークマネージャ（<code>Cmd + Option + B</code>）→ <code>⋯</code> → ブックマークをエクスポート</li>
+              <li><strong>Firefox</strong>: ライブラリ（<code>Cmd + Shift + O</code>）→ インポートとバックアップ → HTML 形式でエクスポート</li>
+              <li><strong>Safari</strong>: ファイル → ブックマークを書き出す</li>
+              <li><strong>Edge</strong>: お気に入りの管理 → <code>⋯</code> → お気に入りをエクスポート</li>
+            </ul>
+          </div>
+        </details>
+        <div class="note">
+          <strong>ポイント</strong> フォルダ構造は自動的に「タグ」として取り込まれます。複数のブラウザから順番にインポートして全部を1箇所に集められます。インポートしてもブラウザ側のデータは一切変更されません。
+        </div>
       </div>
-      <div class="screenshot-wrap">
-        <img src="/bookmark-manager-pe/assets/main-layout.png" alt="Bookmark Manager PE のメイン画面" />
-        <p>左: サイドバー / 中央: ブックマーク一覧 / 右: 詳細パネル</p>
+
+      <h4>削除・タグ編集</h4>
+      <ul>
+        <li>詳細パネルからタイトル・URL・メモの編集、タグの追加・削除、削除ができます。</li>
+        <li>一覧の行に表示されたタグの <code>×</code> を押すと、そのタグだけ外せます。</li>
+      </ul>
+
+      <!-- 4. 検索 -->
+      <h3>4. 検索</h3>
+      <p>サイドバー上部の検索ボックスに入力すると、<strong>タイトル・URL・タグ</strong> を横断検索します。検索中もスマートビューやタグフィルタはそのまま適用されます。</p>
+
+      <!-- 5. 整理 -->
+      <div id="usage-organize">
+        <h3>5. 整理機能</h3>
+        <h4>スマートビュー（サイドバー上部）</h4>
+        <table>
+          <thead><tr><th>ビュー</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td>すべて</td><td>全ブックマーク（デフォルト）</td></tr>
+            <tr><td>未分類</td><td>タグが1つも付いていないもの</td></tr>
+            <tr><td>最近追加</td><td>7日以内に追加したもの</td></tr>
+            <tr><td>使われていない</td><td>追加から30日以上経過し、一度も開いていないもの</td></tr>
+            <tr><td>よく見る</td><td>訪問回数が多いもの</td></tr>
+          </tbody>
+        </table>
+        <h4>タグフィルタ / デバイススコープ（サイドバー）</h4>
+        <p>タグをクリックするとそのタグの付いたものだけに絞り込み。スコープは「すべて / 共有のみ / デバイス固有のみ」を切り替えられます（詳細パネルで各ブックマークも切替可）。</p>
+        <h4>重複検出・マージ</h4>
+        <ol>
+          <li>一覧上部の <strong>重複</strong> ボタンをクリック</li>
+          <li>検出された重複グループを確認</li>
+          <li>グループ単位で <strong>マージ</strong> またはスキップを選択</li>
+        </ol>
+        <p>URL は自動正規化（<code>utm_*</code> 等の広告パラメータを除去）して比較するため、実質同じページは確実に重複判定されます。</p>
+        <details>
+          <summary>マージ時の統合ルール</summary>
+          <div class="inner">
+            <table>
+              <thead><tr><th>項目</th><th>ルール</th></tr></thead>
+              <tbody>
+                <tr><td>タイトル</td><td>一番長いタイトルを採用</td></tr>
+                <tr><td>タグ</td><td>両方のタグを合体</td></tr>
+                <tr><td>訪問回数</td><td>合算</td></tr>
+                <tr><td>メモ</td><td>改行で連結</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- 6. 探索 -->
+      <div id="usage-explore">
+        <h3>6. 探索機能（AI 要約・サムネイル・リンク発見）</h3>
+        <p>Cloudflare のブラウザ（Kitesurf）で、保存したブックマークを<strong>自動分析</strong>します。日本語で 2〜3 文の AI 要約、サムネイル保存、関連リンクの発見を行います。</p>
+        <h4>事前準備（1回だけ）</h4>
+        <p>この機能は <strong>Cloudflare Worker</strong> として動くため、まずデプロイが必要です。</p>
+        <pre><code>cd workers/explore
+pnpm install
+npx wrangler login    # 初回のみ（Cloudflare アカウント）
+npx wrangler deploy</code></pre>
+        <p>成功すると <code>https://bookmark-explore.xxxxx.workers.dev</code> のような Worker URL が表示されます。</p>
+        <h4>使い方</h4>
+        <div class="steps">
+          <div class="step"><h4>「探索」ボタンをクリック</h4><p>アプリの一覧上部にあります。</p></div>
+          <div class="step"><h4>Worker URL を設定</h4><p>パネル内の「設定」→ 接続テスト → 保存。</p></div>
+          <div class="step"><h4>対象を選択</h4><p>デフォルトは「未分類のみ」。全件 / 現在の絞り込みも選択可。</p></div>
+          <div class="step"><h4>「探索を開始」</h4><p>完了後、結果の「適用」で要約・タグ・サムネイルを保存。</p></div>
+          <div class="step"><h4>関連リンクを追加</h4><p>「発見したリンク」から未登録のページをまとめて登録。</p></div>
+        </div>
+        <div class="note">
+          <strong>注意</strong> Kitesurf はベータ版のため、動画・ログイン必須サイト・ボット対策サイトでは失敗する場合があります（そのブックマークだけ失敗扱いになり、探索は続行）。対象件数が多いと時間がかかるため、まずは「未分類のみ」から試すのがおすすめです。
+        </div>
+      </div>
+
+      <!-- 7. Zed AI -->
+      <h3>7. Zed AI 連携（高度な整理）</h3>
+      <div class="steps">
+        <div class="step"><h4>AI パネルを開く</h4><p>一覧上部の「AI」ボタン。</p></div>
+        <div class="step"><h4>API サーバを起動</h4><p>パネルの「起動」で <code>http://localhost:9876</code> が起動。</p></div>
+        <div class="step"><h4>プロンプトをコピー</h4><p>タグ分類 / タイトル正規化 / 重複マージ提案 / コレクション分析。</p></div>
+        <div class="step"><h4>Zed で実行</h4><p>AI チャット（<code>Cmd + I</code>）に貼り付け、生成された JSON をパネルで適用。</p></div>
+      </div>
+
+      <!-- 8. 同期 -->
+      <div id="usage-sync">
+        <h3>8. GitHub 同期（複数デバイス）</h3>
+        <h4>セットアップ</h4>
+        <div class="steps">
+          <div class="step"><h4>PAT を発行</h4><p>GitHub → Settings → Developer settings → Personal access tokens (classic)。スコープは <code>repo</code>。</p></div>
+          <div class="step"><h4>同期用リポジトリを作成</h4><p>公開・非公開どちらでも可。</p></div>
+          <div class="step"><h4>アプリで設定</h4><p>サイドバー下部「同期」→ トークン / 所有者 / リポジトリ名 / デバイス名 → 接続テスト＆保存。</p></div>
+        </div>
+        <p><strong>同期ボタン</strong> をクリックすると、取得 → マージ → 送信 → 結果通知が自動で行われます。</p>
+        <h4>コンフリクト（競合）が起きたら</h4>
+        <table>
+          <thead><tr><th>選択肢</th><th>動作</th></tr></thead>
+          <tbody>
+            <tr><td>ローカルを保持</td><td>このデバイスの内容を残す</td></tr>
+            <tr><td>リモートを採用</td><td>GitHub 上の内容で上書き</td></tr>
+            <tr><td>自動マージ</td><td>タイトル・タグ・メモを統合</td></tr>
+            <tr><td>スキップ</td><td>今回は保留して、後でまた同期</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 9. データ -->
+      <div id="usage-data">
+        <h3>9. データの場所とバックアップ</h3>
+        <table>
+          <thead><tr><th>OS</th><th>保存場所</th></tr></thead>
+          <tbody>
+            <tr><td>macOS</td><td><code>~/Library/Application Support/bookmark-manager-pe/bookmarks.db</code></td></tr>
+            <tr><td>Windows</td><td><code>%APPDATA%/bookmark-manager-pe/bookmarks.db</code></td></tr>
+            <tr><td>Linux</td><td><code>~/.config/bookmark-manager-pe/bookmarks.db</code></td></tr>
+          </tbody>
+        </table>
+        <p>バックアップはアプリを終了した状態で <code>bookmarks.db</code> をコピーするのが確実です。GitHub 同期を設定していればリポジトリ内にもデータが残るため二重に安全です。</p>
+      </div>
+
+      <!-- 10. トラブル -->
+      <div id="usage-trouble">
+        <h3>10. よくあるトラブル</h3>
+        <table>
+          <thead><tr><th>症状</th><th>対処</th></tr></thead>
+          <tbody>
+            <tr><td>アプリが起動しない</td><td><code>pnpm rebuild</code> を実行してから <code>pnpm dev</code></td></tr>
+            <tr><td>同期が「接続失敗」</td><td>トークンの期限切れ・リポジトリ名/所有者の誤りを確認</td></tr>
+            <tr><td>AI が応答しない</td><td><code>http://localhost:9876/api/health</code> が開くか確認、AI パネルでサーバを起動</td></tr>
+            <tr><td>探索がすべて失敗する</td><td>Worker URL の接続テストを確認。Kitesurf の制限（beta）の可能性</td></tr>
+            <tr><td>重複が検出されない</td><td>正規化後も別 URL の場合は手動で判断</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -282,7 +430,7 @@
       <p>リポジトリは MIT License で公開しています。まずはローカルで動かしてみましょう。</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://github.com/watanabe3tipapa/bookmark-manager-pe">リポジトリへ</a>
-        <a class="btn btn-ghost" href="/bookmark-manager-pe/docs/guide/getting-started">セットアップを見る</a>
+        <a class="btn btn-ghost" href="#usage-install">セットアップを見る</a>
       </div>
     </div>
   </section>
@@ -290,7 +438,7 @@
   <footer>
     <div class="container footer-inner">
       <span>© 2026 Bookmark Manager PE · MIT License</span>
-      <span><a href="https://github.com/watanabe3tipapa/bookmark-manager-pe">GitHub</a> · <a href="/bookmark-manager-pe/docs/">使い方ガイド</a></span>
+      <span><a href="/bookmark-manager-pe/docs/">使い方ガイド</a> · <a href="https://github.com/watanabe3tipapa/bookmark-manager-pe">GitHub</a></span>
     </div>
   </footer>
 </body>
