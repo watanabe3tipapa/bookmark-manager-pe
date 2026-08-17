@@ -1,8 +1,8 @@
-name: Deploy Docs
+name: Deploy LP & Docs
 on:
   push:
     branches: [main]
-    paths: ['docs/**']
+    paths: ['docs/**', 'lp/**', '.github/workflows/**']
   workflow_dispatch:
 
 permissions:
@@ -28,10 +28,15 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:build
+      - name: Assemble site (LP at root, docs under /docs/)
+        run: |
+          mkdir -p dist/docs
+          cp -r lp/. dist/
+          cp -r docs/.vitepress/dist/. dist/docs/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/.vitepress/dist
+          path: dist
   deploy:
     needs: build
     runs-on: ubuntu-latest

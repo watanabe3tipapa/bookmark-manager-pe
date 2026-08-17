@@ -4,7 +4,7 @@ export default defineConfig({
   lang: 'ja-JP',
   title: 'Bookmark Manager PE',
   description: 'マルチブラウザ・マルチデバイス ブックマーク管理ツール',
-  base: '/bookmark-manager-pe/',
+  base: '/bookmark-manager-pe/docs/',
   themeConfig: {
     nav: [
       { text: 'ガイド', link: '/guide/getting-started' },

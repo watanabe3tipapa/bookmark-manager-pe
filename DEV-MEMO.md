@@ -328,3 +328,31 @@ npx wrangler deploy
 - Kitesurf は beta で無料枠制限あり（エラー時は該当ブックマークのみ失敗として継続）。
 - サムネイル保存時に既存ファイルは上書き（同じ bookmarkId）。
 - sync（Phase 5）の device JSON にも summary / thumbnail_path を載せて他デバイスへ伝搬。
+
+## Phase 8: ランディングページ（LP） ✅
+
+### 構成
+GitHub Pages サイトのトップページを LP（マーケティング用ランディングページ）に変更し、VitePress の使い方ガイドを `/docs/` 配下へ移動した。
+
+```
+サイトのルート (/bookmark-manager-pe/)
+├── index.html          # 静的 LP（lp/index.html、ビルド不要の自己完結 HTML+CSS）
+├── assets/             # LP の画像（lp/assets/main-layout.png）
+└── docs/               # VitePress ガイド（base を /bookmark-manager-pe/docs/ に変更）
+```
+
+### 変更点
+- **追加**: `lp/index.html` — ヒーロー / 機能6カード / 使い方3ステップ / スクリーンショット / CTA / フッター。ダークテーマ（アプリと同系の zinc + emerald）。リンクは `/bookmark-manager-pe/` 絶対パス。
+- **追加**: `lp/assets/main-layout.png`（`docs/public/screenshots/main-layout.png` からコピー）
+- **変更**: `docs/.vitepress/config.ts` の `base` を `/bookmark-manager-pe/docs/` に変更
+- **変更**: `.github/workflows/deploy-docs.yml` を「LP & Docs」に拡張
+  - Trigger: `docs/**` / `lp/**` / `.github/workflows/**`
+  - ビルド: `pnpm docs:build` 後に `dist/` へ LP をコピー → `dist/docs/` へ VitePress 出力をコピー → 結合 `dist/` を `actions/upload-pages-artifact` でデプロイ
+
+### 検証
+- `pnpm docs:build` 成功（新 base でも asset パスは `/bookmark-manager-pe/docs/...` に正しく解決）
+- 結合ディレクトリの構成をローカルで再現し、LP がルート・docs が `/docs/` に配置されることを確認
+
+### 注意
+- 既存の docs URL（例: `/bookmark-manager-pe/guide/...`）は `/bookmark-manager-pe/docs/guide/...` に変わった
+- LP は純粋な静的ファイルのためビルドステップ不要。`wrangler` や Node 依存はない
