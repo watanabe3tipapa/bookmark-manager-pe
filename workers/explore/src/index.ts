@@ -56,6 +56,27 @@ async function readJsonBody(res: Response): Promise<unknown> {
   }
 }
 
+function unwrapResult(body: unknown): unknown {
+  if (body && typeof body === 'object') {
+    const obj = body as Record<string, unknown>
+    if ('result' in obj) {
+      const result = obj.result
+      if (result && typeof result === 'object') {
+        const step = (result as Record<string, unknown>).step
+        if (step && typeof step === 'object') {
+          const info = (step as Record<string, unknown>).info
+          if (info && typeof info === 'object') {
+            const apiResult = (info as Record<string, unknown>).api_result
+            if (apiResult !== undefined) return apiResult
+          }
+        }
+      }
+      return result
+    }
+  }
+  return body
+}
+
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -74,13 +95,12 @@ async function extractStructured(env: Env, url: string): Promise<{ title?: strin
     response_format: JSON_SCHEMA,
     gotoOptions: { waitUntil: 'networkidle2' },
   })
-  const body = (await readJsonBody(res)) as { result?: Record<string, unknown> }
-  const result = body?.result || body
-  const data = result as Record<string, unknown>
+  const body = await readJsonBody(res)
+  const result = unwrapResult(body) as Record<string, unknown>
   return {
-    title: typeof data?.title === 'string' ? data.title : undefined,
-    summary: typeof data?.summary === 'string' ? data.summary : undefined,
-    tags: Array.isArray(data?.tags) ? data.tags.filter((t): t is string => typeof t === 'string') : [],
+    title: typeof result?.title === 'string' ? result.title : undefined,
+    summary: typeof result?.summary === 'string' ? result.summary : undefined,
+    tags: Array.isArray(result?.tags) ? result.tags.filter((t): t is string => typeof t === 'string') : [],
   }
 }
 
@@ -98,8 +118,8 @@ async function extractLinks(env: Env, url: string): Promise<string[]> {
     browser: 'kitesurf',
     visibleLinksOnly: true,
   })
-  const body = (await readJsonBody(res)) as { result?: unknown }
-  const links = body?.result || body
+  const body = await readJsonBody(res)
+  const links = unwrapResult(body)
   if (!Array.isArray(links)) return []
   return links.filter((l): l is string => typeof l === 'string' && /^https?:\/\//.test(l))
 }
